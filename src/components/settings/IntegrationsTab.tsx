@@ -46,6 +46,20 @@ const initialDirectoryServices: ServerConfig[] = [
     availabilityCheckValue: 30,
     availabilityCheckUnit: "min",
   },
+  {
+    id: "3",
+    name: "Legacy AD",
+    type: "AD",
+    address: "10.0.0.9",
+    port: "389",
+    baseDN: "dc=legacy,dc=local",
+    isMain: false,
+    stopTracking: true,
+    status: "unavailable", // "Не используется" equivalent for red indicator logic often maps to error or specific status
+    syncFrequency: "24 ч",
+    availabilityCheckValue: 1,
+    availabilityCheckUnit: "h",
+  },
 ];
 
 const initialConfigSystems: ServerConfig[] = [];
@@ -109,9 +123,19 @@ export function IntegrationsTab() {
     const { variant, editingId } = sheetState;
     const isEdit = !!editingId;
 
+    // Determine default status for new items, or keep existing for edit
+    // Logic: if editing, keep existing status. If new, default to active.
+    let currentStatus: ServerConfig["status"] = "active";
+    
+    if (isEdit) {
+      const list = variant === "directory" ? directoryServices : configSystems;
+      const existing = list.find(s => s.id === editingId);
+      if (existing) currentStatus = existing.status;
+    }
+
     const newServer: ServerConfig = {
       id: editingId || Math.random().toString(36).substr(2, 9),
-      status: "active", // Default to active for new, logic can be refined
+      status: currentStatus,
       ...data,
     };
 
@@ -131,14 +155,14 @@ export function IntegrationsTab() {
     if (variant === "directory") {
       setDirectoryServices((prev) => {
         if (isEdit) {
-          return prev.map((s) => (s.id === editingId ? { ...s, ...data } : s));
+          return prev.map((s) => (s.id === editingId ? { ...s, ...data, status: currentStatus } : s));
         }
         return [...prev, newServer];
       });
     } else {
       setConfigSystems((prev) => {
         if (isEdit) {
-          return prev.map((s) => (s.id === editingId ? { ...s, ...data } : s));
+          return prev.map((s) => (s.id === editingId ? { ...s, ...data, status: currentStatus } : s));
         }
         return [...prev, newServer];
       });
@@ -217,9 +241,9 @@ export function IntegrationsTab() {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Вы уверены?</AlertDialogTitle>
+            <AlertDialogTitle>Вы действительно хотите удалить сервер {deleteDialog.server?.name}?</AlertDialogTitle>
             <AlertDialogDescription>
-              Это действие нельзя отменить. Сервер будет удален из списка.
+              Это действие нельзя отменить.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

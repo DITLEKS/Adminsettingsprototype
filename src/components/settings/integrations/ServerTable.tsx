@@ -7,14 +7,8 @@ import {
   TableHeader,
   TableRow,
 } from "../../ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "../../ui/dropdown-menu";
 import { Button } from "../../ui/button";
-import { MoreVertical, Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2 } from "lucide-react";
 import { ServerConfig } from "./types";
 
 interface ServerTableProps {
@@ -43,7 +37,7 @@ export function ServerTable({
       case "disabled":
         return "Отключен администратором";
       case "unavailable":
-        return "Недоступен";
+        return "Не используется";
       default:
         return status;
     }
@@ -61,7 +55,7 @@ export function ServerTable({
             <TableHead>Порт</TableHead>
             {variant === "directory" && <TableHead>Base DN</TableHead>}
             <TableHead>Статус сервера</TableHead>
-            <TableHead className="w-[50px]"></TableHead>
+            <TableHead className="w-[100px] text-right">Действия</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -92,27 +86,26 @@ export function ServerTable({
                 )}
                 <TableCell>{getStatusText(server.status)}</TableCell>
                 <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <span className="sr-only">Open menu</span>
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => onEdit(server)}>
-                        <Edit className="mr-2 h-4 w-4" />
-                        Редактировать
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => onDelete(server)}
-                        className="text-red-600 focus:text-red-600"
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Удалить
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <div className="flex items-center justify-end gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onEdit(server)}
+                      title="Редактировать"
+                      className="h-8 w-8"
+                    >
+                      <Edit className="h-4 w-4 text-gray-500" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onDelete(server)}
+                      title="Удалить"
+                      className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))

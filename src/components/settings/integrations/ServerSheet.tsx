@@ -124,25 +124,29 @@ export function ServerSheet({
   const address = form.watch("address");
   const port = form.watch("port");
 
-  const canCheckConnection = !!name && !!type && !!address && !!port;
-
   const handleCheckConnection = async () => {
     setConnectionStatus("loading");
-    // Mock connection check
+    
+    // Basic validation for check
+    const isValid = !!name && !!type && !!address && !!port;
+
     setTimeout(() => {
-      const isSuccess = Math.random() > 0.3; // 70% success chance
-      setConnectionStatus(isSuccess ? "success" : "error");
-    }, 1500);
+      if (isValid) {
+        setConnectionStatus("success");
+      } else {
+        setConnectionStatus("error");
+      }
+    }, 2000); // 2 second delay
   };
 
   const handleSubmit = (values: z.infer<typeof formSchema>) => {
     onSubmit(values);
-    onClose();
+    // onClose handled by parent or logic
   };
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent className="sm:max-w-[540px] overflow-y-auto">
+      <SheetContent className="sm:max-w-[540px] w-full overflow-y-auto">
         <SheetHeader>
           <SheetTitle>
             {initialData ? "Редактирование сервера" : "Добавление сервера"}
@@ -154,7 +158,7 @@ export function ServerSheet({
           </SheetDescription>
         </SheetHeader>
 
-        <div className="py-6">
+        <div className="py-6 px-4">
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(handleSubmit)}
@@ -167,33 +171,47 @@ export function ServerSheet({
                   <FormItem>
                     <FormLabel>Название <span className="text-red-500">*</span></FormLabel>
                     <FormControl>
-                      <Input placeholder="Название сервера" {...field} />
+                      <Input placeholder="Название сервера" {...field} className="w-full" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
+              <FormField
+                control={form.control}
+                name="type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Тип <span className="text-red-500">*</span></FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Выберите тип" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="AD">AD</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid grid-cols-4 gap-4">
+                 <FormField
                   control={form.control}
-                  name="type"
+                  name="address"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Тип <span className="text-red-500">*</span></FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Выберите тип" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="AD">AD</SelectItem>
-                        </SelectContent>
-                      </Select>
+                    <FormItem className="col-span-3">
+                      <FormLabel>Адрес (IPv4 или FQDN) <span className="text-red-500">*</span></FormLabel>
+                      <FormControl>
+                        <Input placeholder="192.168.1.1" {...field} className="w-full" />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -203,30 +221,16 @@ export function ServerSheet({
                   control={form.control}
                   name="port"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="col-span-1">
                       <FormLabel>Порт <span className="text-red-500">*</span></FormLabel>
                       <FormControl>
-                        <Input placeholder="389" {...field} />
+                        <Input placeholder="389" {...field} className="w-full" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
               </div>
-
-              <FormField
-                control={form.control}
-                name="address"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Адрес (IPv4 или FQDN) <span className="text-red-500">*</span></FormLabel>
-                    <FormControl>
-                      <Input placeholder="192.168.1.1" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
 
               {variant === "directory" && (
                 <FormField
@@ -236,7 +240,7 @@ export function ServerSheet({
                     <FormItem>
                       <FormLabel>Base DN</FormLabel>
                       <FormControl>
-                        <Input placeholder="dc=example,dc=com" {...field} />
+                        <Input placeholder="dc=example,dc=com" {...field} className="w-full" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -290,28 +294,29 @@ export function ServerSheet({
                 />
               </div>
 
-              <div className="flex items-center gap-4">
+              <div className="space-y-2">
                 <Button
                   type="button"
-                  variant="outline"
                   onClick={handleCheckConnection}
-                  disabled={!canCheckConnection || connectionStatus === "loading"}
+                  disabled={connectionStatus === "loading"}
+                  className="bg-blue-600 hover:bg-blue-700 text-white w-full sm:w-auto"
                 >
                   {connectionStatus === "loading" && (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}
                   Проверить соединение
                 </Button>
+                
                 {connectionStatus === "success" && (
                   <div className="flex items-center text-green-600 text-sm font-medium">
-                    <CheckCircle2 className="mr-1 h-4 w-4" />
-                    Успешно
+                    <CheckCircle2 className="mr-2 h-4 w-4" />
+                    Соединение успешно установлено
                   </div>
                 )}
                 {connectionStatus === "error" && (
                   <div className="flex items-center text-red-600 text-sm font-medium">
-                    <XCircle className="mr-1 h-4 w-4" />
-                    Ошибка
+                    <XCircle className="mr-2 h-4 w-4" />
+                    Не удалось установить соединение с сервером
                   </div>
                 )}
               </div>
@@ -329,7 +334,7 @@ export function ServerSheet({
                         defaultValue={field.value}
                       >
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger className="w-full">
                             <SelectValue placeholder="Выберите частоту" />
                           </SelectTrigger>
                         </FormControl>
@@ -357,7 +362,7 @@ export function ServerSheet({
                       <FormItem>
                         <FormLabel>Проверка доступности каждые</FormLabel>
                         <FormControl>
-                          <Input type="number" min={1} {...field} />
+                          <Input type="number" min={1} {...field} className="w-full" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -374,7 +379,7 @@ export function ServerSheet({
                           defaultValue={field.value}
                         >
                           <FormControl>
-                            <SelectTrigger>
+                            <SelectTrigger className="w-full">
                               <SelectValue />
                             </SelectTrigger>
                           </FormControl>
@@ -390,7 +395,10 @@ export function ServerSheet({
                 </div>
               </div>
 
-              <SheetFooter className="pt-6">
+              <SheetFooter className="pt-6 flex-row gap-2 sm:justify-end">
+                 <Button type="button" variant="outline" onClick={onClose}>
+                  Отмена
+                </Button>
                 <Button type="submit" className="bg-green-600 hover:bg-green-700">
                   {initialData ? "Сохранить" : "Создать"}
                 </Button>

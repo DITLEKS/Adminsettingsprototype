@@ -22,6 +22,10 @@ export function GeneralTab() {
               </Label>
               <div className="text-lg font-medium">23.11.2025</div>
             </div>
+            <div className="space-y-1">
+              <Label className="text-muted-foreground">Базовый URL системы</Label>
+              <div className="text-lg font-medium">https://service-portal.ru</div>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -35,11 +39,6 @@ export function GeneralTab() {
             <Label className="text-muted-foreground">Техническая поддержка</Label>
             <div className="font-medium">support@appstore.local</div>
             <div className="font-medium">+7 (999) 000-00-00</div>
-          </div>
-          <Separator />
-          <div className="grid gap-1">
-            <Label className="text-muted-foreground">Администратор системы</Label>
-            <div className="font-medium">admin@appstore.local</div>
           </div>
         </CardContent>
       </Card>
